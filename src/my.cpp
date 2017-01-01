@@ -1,17 +1,12 @@
-#include <cstdlib>
-#include <iostream>
-#include "my.h"
 
+#include <stdio.h>
+#include <iostream>
+#include <Windows.h>
+#include "my.h"
 using namespace std;
 
 void printField(field& f) {
-
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
 	system("cls");
-#else
-	system("clear");
-#endif
-
 	for (int i = 0; i<FSIZE; i++) {
 		for (int j =0 ; j<FSIZE; j++) {
 			cout << f.f[i][j];
@@ -19,7 +14,6 @@ void printField(field& f) {
 		cout << "\n";
 	}
 }
-
 void csField(field& f) {
 	for (int i = 0; i<FSIZE; i++) {
 		for (int j = 0; j<FSIZE; j++) {
@@ -32,59 +26,43 @@ void csField(field& f) {
 		}
 	}
 }
+void play(field& f,field& f2,int steps) { // Play Function
+char s;
+for (int m=1;m<=steps;m++) {
+        printField(f);
+for (int i=2;i<=FSIZE-2;i++) {
+    for (int j=2;j<=FSIZE-2;j++) {
+        s=f.f[i][j];
+        if (s==ALIVE) {
+            if (rule1(j,i,f)) s=DEAD;
+            else if (rule2(j,i,f)) s=ALIVE;
+            else if (rule3(j,i,f)) s=DEAD;
+        }
+        else if (s==DEAD) if (rule4(j,i,f)) s=ALIVE;
+        f2.f[i][j]=s;
 
-void dp(int x, int y, field& f) {
-	f.f[y][x] = ALIVE;
-	printField(f);
+    }
+}
+f=f2;
+printField(f);
+// getchar(); // It's to check :D
 }
 
-void dline(field& f) {
-	for (int i = 0; i<FSIZE; i++) {
-		dp(i, i, f);
-		printField(f);
-	}
 }
-
-void play(field& f, int maxIterations) { // Play Function
-	char s;
-	for (int k = 0; k < maxIterations; k++) {
-		for (int i=2;i<=FSIZE-2;i++) {
-	    for (int j=2;j<=FSIZE-2;j++) {
-	        s=f.f[i][j];
-	        if (s==ALIVE) {
-	            if (rule1(j,i,f)) s=DEAD;
-	            else if (rule2(j,i,f)) s=ALIVE;
-	            else if (rule3(j,i,f)) s=DEAD;
-	        }
-	        else if (s==DEAD) if (rule4(j,i,f)) s=ALIVE;
-	        f.f[i][j]=s;
-	    }
-		}
-		printField(f);
-	}
+void fillCell(int y,int x,field& f) { // Function which create a block ( cell with 8 neighbours )
+    for (int i=x-1;i<=x+1;i++) {
+        for (int j=y-1;j<=y+1;j++) f.f[i][j]=ALIVE;
 }
-
-void fillCell(int y, int x, field& f) { // Function which create a block ( cell with 4 neighbours )
-    for (int i = x - 1; i <= x; i++)
-        for (int j = y - 1; j <= y; j++)
-					f.f[i][j] = ALIVE;
 }
-
-void createPlaner(int x, int y, field& f)
-{
-	f.f[y][x - 1] = f.f[y][x] = f.f[y][x + 1] = ALIVE;
-	f.f[y - 1][x + 1] = ALIVE;
-	f.f[y - 2][x] = ALIVE;
-}
-
-int neighbours(int y,int x,field& f) { // Calculate number of alive neighbours
+int neighbours(int x,int y,field& f) { // Calculate number of alive neighbours
     int k=0;
     for (int i=x-1;i<=x+1;i++) {
         for (int j=y-1;j<=y+1;j++) {
             if ((i==x) && (j==y));
             else {
-                if (f.f[i][j]==ALIVE) k++;
+                if (f.f[j][i]==ALIVE) k++;
                 }
+
         }
     }
     return k;
@@ -99,51 +77,102 @@ int neighbours(int y,int x,field& f) { // Calculate number of alive neighbours
         if (f.f[x+1][y+1]==ALIVE) k++;
     }*/
 }
-
 bool rule1(int y,int x,field& f) { // Check Rules
-	return (neighbours(y,x,f)<2);
+return (neighbours(y,x,f)<2);
 }
 
 bool rule2(int y,int x,field& f) {
-	return ((neighbours(y,x,f)==2) || (neighbours(y,x,f)==3));
+return ((neighbours(y,x,f)==2) || (neighbours(y,x,f)==3));
 }
 
 bool rule3(int y,int x,field& f) {
-	return (neighbours(y,x,f)>3);
+return (neighbours(y,x,f)>3);
 }
 
 bool rule4(int y,int x,field& f) {
     bool l;
-    l = ((neighbours(y,x,f)==3) && (f.f[y][x]==DEAD));
-		return l;
+    l= ((neighbours(y,x,f)==3) && (f.f[x][y]==DEAD));
+return l;
 }
 
+void createPlaner(int x, int y, field& f)
+{
+	f.f[y][x - 1] = f.f[y][x] = f.f[y][x + 1] = ALIVE;
+	f.f[y - 1][x + 1] = ALIVE;
+	f.f[y - 2][x] = ALIVE;
+}
 
+void createSmallExploder(int x,int y,field& f)
+{
+    f.f[y][x - 1] = f.f[y][x] = f.f[y][x + 1] = ALIVE;
+    f.f[y-1][x]=ALIVE;
+    f.f[y+1][x-1]=ALIVE;
+    f.f[y+1][x+1]=ALIVE;
+    f.f[y+2][x]=ALIVE;
+}
+void createExploder (int x,int y,field& f)
+{
+    f.f[y][x-2]=f.f[y][x+2]=f.f[y][x]=ALIVE;
+    f.f[y+1][x-2]=f.f[y+1][x+2]=ALIVE;
+    f.f[y+2][x-2]=f.f[y+2][x+2]=ALIVE;
+    f.f[y+3][x-2]=f.f[y+3][x+2]=ALIVE;
+    f.f[y+4][x-2]=f.f[y+4][x+2]=f.f[y+4][x]=ALIVE;
 
+}
 
-
-
-
-
-
-/*for (;;){
-    for (int i=2;i<=FSIZE-2;i++) {
-       plan.f[i][i]=ALIVE;
-       plan.f[i][i+1]=ALIVE;
-       plan.f[i+1][i]=ALIVE;
-       plan.f[i-1][i+1]=ALIVE;
-       system("cls");
-       printField(plan);
-       csField(plan);
-       plan.f[i][i]=ALIVE;
-       plan.f[i][i+1]=ALIVE;
-       plan.f[i+1][i+1]=ALIVE;
-       plan.f[i+2][i+1]=ALIVE;
-       plan.f[i][i-1]=DEAD;
-       plan.f[i+1][i-1]=DEAD;
-       plan.f[i-1][i]=DEAD;
-       system("cls");
-       printField(plan);
-       csField(plan);
+void createTenCellRow (int x,int y,field& f)
+{
+    for (int i=x-5;i<x+5;i++) f.f[y][i]=ALIVE;
+}
+void createSpaceship (int x,int y,field& f)
+{
+f.f[y][x]=f.f[y-1][x+1]=f.f[y-1][x+2]=f.f[y-1][x+3]=f.f[y-1][x+4]=ALIVE;
+f.f[y][x+4]=f.f[y+1][x+4]=ALIVE;
+f.f[y+2][y+3]=ALIVE;
+f.f[y+2][x]=ALIVE;
+}
+void createTumbler (int x,int y,field& f)
+{
+    for (int i=y;i>=y-4;i--) {
+        f.f[i][x]=f.f[i][x+2]=ALIVE;
     }
-    }*/
+    f.f[y-4][x-1]=f.f[y-3][x-1]=ALIVE;
+    f.f[y-4][x+3]=f.f[y-3][x+3]=ALIVE;
+    f.f[y+1][x-1]=f.f[y+1][x-2]=f.f[y][x-2]=f.f[y-1][x-2]=ALIVE;
+    f.f[y+1][x+3]=f.f[y+1][x+4]=f.f[y][x+4]=f.f[y-1][x+4]=ALIVE;
+}
+void gShape1 (int x,int y,field& f)
+{
+    f.f[y][x]=f.f[y][x-1]=f.f[y+1][x]=f.f[y+1][x-1]=ALIVE;
+}
+void gShape2 (int x,int y,field& f)
+{
+    f.f[y][x+1]=f.f[y-1][x+1]=f.f[y-1][x]=ALIVE;
+    f.f[y+1][x]=f.f[y+1][x-1]=f.f[y][x-1]=ALIVE;
+}
+void gShape3 (int x,int y,field& f)
+{
+f.f[y][x]=f.f[y-1][x]=f.f[y-2][x]=f.f[y-2][x+1]=f.f[y-1][x+2]=ALIVE;
+}
+void gShape4 (int x,int y,field& f)
+{
+    f.f[y][x]=f.f[y][x+1]=f.f[y][x+2]=f.f[y+1][x]=f.f[y+2][x+1]=ALIVE;
+}
+
+void createGosperGliperGun (int x,int y,field& f)
+{
+    gShape1(x,y,f);
+    gShape2(x+8,y+1,f);
+    gShape3(x+15,y+4,f);
+    gShape2(x+22,y-1,f);
+    gShape4(x+23,y+10,f);
+    gShape1(x+34,y-2,f);
+    gShape3(x+34,y+7,f);
+/*gShape1(x,y,f);
+f.f[y][x+8]=f.f[y][x+9]=f.f[y+1][x+9]=f.f[y+1][x+7]=f.f[y+1][x+7]=f.f[y+1][x+8]=ALIVE;
+f.f[y][x+11]=f.f[y][x+12]=f.f[y-1][x+12]=f.f[y+1][x+13]=f.f[y-1][x+13]=ALIVE;
+f.f[y+6][x+21]=f.f[y+7][x+20]=f.f[y+8][x+20]=f.f[y+7][x+21]=f.f[y+8][x+22]=ALIVE;
+f.f[y][x+21]=f.f[y][x+22]=f.f[y-1][x+21]=f.f[y-2][x+22]=f.f[y-2][x+23]=f.f[y-1][x+23]=ALIVE;
+f.f[y+3][x+30]=f.f[y+2][x+31]=f.f[y+3][x+31]=f.f[y+2][x+32]=f.f[y+4][x+32]=ALIVE;
+f.f[y-2][x+33]=f.f[y-1][x+33]=f.f[y-2][x+34]=f.f[y-1][x+34]=ALIVE;*/
+}
