@@ -5,12 +5,12 @@
 #include <Windows.h>
 #define FSIZE 60
 #define DEAD ' '
-#define ALIVE 'Â°'
+#define ALIVE '°'
 using namespace std;
 struct field { char f[FSIZE][FSIZE]; };
 void printField(field& f);
 void csField(field& f);
-void play(field& f,field& f2,int steps);
+void play(field& f,field& f2);
 int neighbours(int y,int x,field& f);
 bool rule1(int y,int x,field& f);
 bool rule2(int y,int x,field& f);

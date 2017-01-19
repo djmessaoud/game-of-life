@@ -26,10 +26,11 @@ void csField(field& f) {
 		}
 	}
 }
-void play(field& f,field& f2,int steps) { // Play Function
+void play(field& f,field& f2) { // Play Function
 char s;
-for (int m=1;m<=steps;m++) {
-        printField(f);
+for (int m=1;m<=5000;m++) {
+//do {
+    printField(f);
 for (int i=2;i<=FSIZE-2;i++) {
     for (int j=2;j<=FSIZE-2;j++) {
         s=f.f[i][j];
@@ -45,9 +46,10 @@ for (int i=2;i<=FSIZE-2;i++) {
 }
 f=f2;
 printField(f);
-// getchar(); // It's to check :D
+//}while (f.f[FSIZE-1][FSIZE-1]=!ALIVE);
+if (f.f[FSIZE-2][FSIZE-2]==ALIVE) { break; break; break; }
+// getchar(); // It's to check :D}
 }
-
 }
 void fillCell(int y,int x,field& f) { // Function which create a block ( cell with 8 neighbours )
     for (int i=x-1;i<=x+1;i++) {
